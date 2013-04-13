@@ -42,9 +42,7 @@
   (class piece%
     (init col)
     (super-new [color col])
-    (set-field! curr-pos this (if (equal? (get-field color this) 'black)
-                                  (cons 1 4)
-                                  (cons 8 5)))
+   
     (define/override (valid-move)0)))
 
 ;Queen
