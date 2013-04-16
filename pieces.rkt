@@ -49,6 +49,12 @@
                               (cons (- posx 1) (+ posy 1))
                               (cons (- posx 1) (- posy 1)))) (get-field col this)))))
 
+
+(send board board-set! 6 7 (new king%
+                                [col 'black]
+                                [curr-pos (cons 6 7)]))
+
+
 ;Queen
 (define queen%
   (class piece%
@@ -58,22 +64,22 @@
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
       (mbound (append
-               (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not(= y posy)))
-               (lc (cons posx y) : y <- (p-to-n posy 8) @ (not(= y posy)))
-               (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx)))
-               (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx)))
-               (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
-                   (and (= (- x y) (- posx posy)) 
-                        (not (and (equal? x posx) (equal? y posy)))))
-               (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
-                   (and (= (- x y) (- posx posy)) 
-                        (not (and (equal? x posx) (equal? y posy)))))
-               (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
-                   (and (= (- x y) (- (- posx posy))) 
-                        (not (and (equal? x posx) (equal? y posy)))))
-               (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
-                   (and (= (- x y) (- (- posx posy))) 
-                        (not (and (equal? x posx) (equal? y posy))))))))))
+               (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not(= y posy))) (get-field color this))
+               (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not(= y posy)))(get-field color this))
+               (scan-continuous-b (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx)))(get-field color this))
+               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx)))(get-field color this))
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
+                                      (and (= (- x y) (- posx posy)) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (- x y) (- posx posy)) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this))
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
+                                      (and (= (- x y) (- (- posx posy))) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (- x y) (- (- posx posy))) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this)))))))
 
 ;Bishop
 (define bishop%
@@ -83,18 +89,19 @@
     (define/override (valid-move)
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
-      (mbound (append (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
-                          (and (= (- x y) (- posx posy)) 
-                               (not (and (equal? x posx) (equal? y posy)))))
-                      (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
-                          (and (= (- x y) (- posx posy)) 
-                               (not (and (equal? x posx) (equal? y posy)))))
-                      (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
-                          (and (= (- x y) (- (- posx posy))) 
-                               (not (and (equal? x posx) (equal? y posy)))))
-                      (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
-                          (and (= (- x y) (- (- posx posy))) 
-                               (not (and (equal? x posx) (equal? y posy))))))))))
+      (mbound (append 
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
+                                      (and (= (- x y) (- posx posy)) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (- x y) (- posx posy)) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this))
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
+                                      (and (= (- x y) (- (- posx posy))) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (- x y) (- (- posx posy))) 
+                                           (not (and (equal? x posx) (equal? y posy)))))(get-field color this)))))))
 
 ;Rook
 (define rook%
@@ -117,11 +124,21 @@
     (super-new [color col])
     (define/override (valid-move)
       (define posx (car (get-field curr-pos this)))
-      (define posy (cdr (get-field curr-pos this))) ;;Attack move/ starting 2 move
-      (cond [(or (= posy 2) (= posy 7)) (mbound (list 
+      (define posy (cdr (get-field curr-pos this)))
+      (cond [(is-occupied? (cons posx (+ 1 posy))) 
+             (if (and (is-occupied? (cons (+ 1 posx) (+ 1 posy)))
+                      (not (equal? (get-field color (is-occupied? (+ 1 posx) (+ 1 posy)))
+                                   (get-field color this))))
+                 (cons (+ posx 1) (+ posy 1)) '())]
+            [(and (is-occupied? (cons (+ 1 posx) (+ 1 posy)))
+                  (not (equal? (get-field color (is-occupied? (cons (+ 1 posx) (+ 1 posy))))
+                               (get-field color this))))
+             (list (cons posx (+ 1 posy))
+                   (cons (+ 1 posx) (+ 1 posy)))]
+            [(or (= posy 2) (= posy 7)) (mbound (list 
                                                  (cons posx (+ 1 posy))
-                                                 (cons posx (+ 2 posy))))]
-            [else (mbound (cons posx (+ 1 posy)))]))))
+                                                 (cons posx (+ 2 posy))))];;;;;;;;;Account for 7-1/7-2 and if some one is standing 2 steps ahead!
+            [else (mbound (list (cons posx (+ 1 posy))))]))))
 
 ;Knight
 (define knight%
@@ -186,10 +203,10 @@
         (if (is-occupied? (car movelist)) (car movelist)
             (occ-square1st (cdr movelist)))))
   (if (occ-square1st movelist)
-  (cond [(eq? colour (send (is-occupied? (occ-square1st movelist))
-                           color)) (takewhile is-occupied? movelist)]
-        [else (cons (takewhile is-occupied? movelist) occ-square1st)])
-  movelistp))
+      (cond [(eq? colour (send (is-occupied? (occ-square1st movelist))
+                               color)) (takewhile is-occupied? movelist)]
+            [else (cons (takewhile is-occupied? movelist) occ-square1st)])
+      movelistp))
 
 (define (rev-cdr l)
   (reverse (cdr (reverse l))))
