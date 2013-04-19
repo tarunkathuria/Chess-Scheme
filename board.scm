@@ -1,6 +1,6 @@
 ;#lang racket
 ;(include "pieces.scm")
-(include "syntactic-sugar.scm")
+;(include "syntactic-sugar.scm") Can remove
 ;;;;;;;;;;;;;;;;;;;;;;;;Tarun
 (define square%
   (class object%
@@ -23,7 +23,7 @@
                    (list->vector(lc (new square% [pos (cons i j)]) : i <- '(1 2 3 4 5 6 7 8))) : j <- '(1 2 3 4 5 6 7 8)))))
     ;Refer to a particular position on the board
     (define/public (board-ref i j)
-      (vector-ref (vector-ref board (- i 1)) (- j 1)))
+      (vector-ref (vector-ref board (- j 1)) (- i 1)))
     ; Set on the i,j th position piece(or blank) 
     (define/public (board-set! i j piece)
       (let* ([pos (board-ref i j)])
@@ -31,7 +31,9 @@
         )) ;;;;;;;;;;;;What is curr-pos represented as?
     
     (define/public (print-board)
-      (for-each (λ(i) (for-each (λ(j) (display (get-field occupancy (send this board-ref i j))) (display "  ")) '(1 2 3 4 5 6 7 8)) (newline)) '(1 2 3 4 5 6 7 8)))
+      (for-each (λ(y) (for-each (λ(x) (display  (get-field occupancy (send this board-ref x y))) (display "  ")) '(1 2 3 4 5 6 7 8)) (newline)) '(1 2 3 4 5 6 7 8)))
+    
+      ;(for-each (λ(i) (for-each (λ(j) (display (get-field occupancy (send this board-ref i j))) (display "  ")) '(1 2 3 4 5 6 7 8)) (newline)) '(1 2 3 4 5 6 7 8)))
     
     ;Move piece to the new position i,j
     (define/public (move-piece! i j piece)
@@ -67,7 +69,7 @@
                    ;now set on the board's ijth pos that piece
                    (board-set! i j piece)
                    (board-set! (car piecepos) (cdr piecepos) #f)
-                   (set-field! curr-pos (cons i j) piece));;;;;Is there anything else?       
+                   (set-field! curr-pos piece (cons i j)));;;;;Is there anything else?       
             ; Otherwise, either promotion or just a move;;Enp and castling to be done!!!!!!
             ;;;;;;;;;;;;;;;;;;;Made changed color->col
             (if (is-a? piece pawn?)
@@ -83,29 +85,29 @@
                        (set-field! curr-pos (cons i j) piece))))))
     ;;;;;;;;;;;;;;;;;;;Made changes in initialise(CHECK)
     (define/public (initialise)
-      (define (helper i j)
+      (define (helper j i)
         (cond[(= i 1)
-              (cond [(= j 1) (board-set! i j (new rook% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 2) (board-set! i j (new knight% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 3) (board-set! i j (new bishop% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 4) (board-set! i j (new queen% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 5) (board-set! i j (new king% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 6) (board-set! i j (new bishop% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 7) (board-set! i j (new knight% [curr-pos (cons i j)] [col 'Black]))]
-                    [(= j 8) (board-set! i j (new rook% [curr-pos (cons i j)] [col 'Black]))])]
+              (cond [(= j 1) (board-set! j i (new rook% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 2) (board-set! j i (new knight% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 3) (board-set! j i (new bishop% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 4) (board-set! j i (new queen% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 5) (board-set! j i (new king% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 6) (board-set! j i (new bishop% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 7) (board-set! j i (new knight% [curr-pos (cons j i)] [col 'Black]))]
+                    [(= j 8) (board-set! j i (new rook% [curr-pos (cons j i)] [col 'Black]))])]
              [(= i 8)
-              (cond [(= j 1) (board-set! i j (new rook% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 2) (board-set! i j (new knight% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 3) (board-set! i j (new bishop% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 4) (board-set! i j (new queen% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 5) (board-set! i j (new king% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 6) (board-set! i j (new bishop% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 7) (board-set! i j (new knight% [curr-pos (cons i j)] [col 'White]))]
-                    [(= j 8) (board-set! i j (new rook% [curr-pos (cons i j)] [col 'White]))])]
-             [(= i 2) (board-set! i j (new pawn% [curr-pos (cons i j)] [col 'Black]))]
-             [(= i 7) (board-set! i j (new pawn% [curr-pos (cons i j)] [col 'White]))]
-             [else (board-set! i j #f)]))
-      (for-each (λ(i) (for-each (λ(j) (helper i j)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
+              (cond [(= j 1) (board-set! j i (new rook% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 2) (board-set! j i (new knight% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 3) (board-set! j i (new bishop% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 4) (board-set! j i (new queen% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 5) (board-set! j i (new king% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 6) (board-set! j i (new bishop% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 7) (board-set! j i (new knight% [curr-pos (cons j i)] [col 'White]))]
+                    [(= j 8) (board-set! j i (new rook% [curr-pos (cons j i)] [col 'White]))])]
+             [(= i 2) (board-set! j i (new pawn% [curr-pos (cons j i)] [col 'Black]))]
+             [(= i 7) (board-set! j i (new pawn% [curr-pos (cons j i)] [col 'White]))]
+             [else (board-set! j i #f)]))
+      (for-each (λ(y) (for-each (λ(x) (helper x y)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
     (define/public (make-move!)
       (let* ([posPx (begin (display "InitialPositionX") (newline) (read))]
              [posPy (begin(display "InitialPositionY") (newline) (read))]
@@ -115,8 +117,9 @@
              [i (display (is-a? piece knight%))]
              [validMovesList (begin (display(send piece valid-move)) (send piece valid-move))]
              [isMoveValid? (member (cons posNx posNy) validMovesList)])
-             (if isMoveValid?
-                 (move-piece posNx posNy piece)
+        (newline)     
+        (if isMoveValid?
+                 (move-piece! posNx posNy piece)
                  (make-move!))))    
     ))
 
@@ -124,5 +127,9 @@
 ;;;;;;Made changes
 (define board (new board%))
 (send board initialise)
-
+(send board print-board)
+(newline)
+(display (get-field occupancy (send board board-ref 3 1)))
+(newline)
+(get-field color (get-field occupancy (send board board-ref 3 1)))
 

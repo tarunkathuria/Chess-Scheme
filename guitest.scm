@@ -1,9 +1,10 @@
 (require graphics/graphics)
 (require racket/gui)
-(include "board.scm")
+
 (include "pieces.scm")
+(include "board.scm")
 (include "boardGUI.scm")
-(require "alphabeta.scm")
+;(require "alphabeta.scm")
 
 (open-graphics)
 
@@ -25,6 +26,9 @@
 
 (define turn 'White)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;
 (define img-button%
@@ -66,9 +70,7 @@
       (helper imgs))))
 ;;;;A few important things needed. :p
 (define Chess-Window (open-viewport "Kasparov Chess" (+ right-gap horiz-inset width) (+ bottom-gap vert-inset height)))
-;((draw-pixmap Chess-Window) "Images/Chess.jpg" (make-posn 0 0) (make-rgb 0 0 0))
-;(sleep 2)
-;((clear-viewport Chess-Window))
+
 
 
 
