@@ -1,3 +1,37 @@
+;;;;;Definitions;;;;;
+(define (search-n-remove n l)
+  (define (helper l fl)
+    (cond [(null? l) fl]
+          [(equal? (car l) n) (helper (cdr l) fl)]
+          [else (helper (cdr l) (append fl (list (car l))))]))
+  (helper l '()))
+
+(define (uniquer l)
+  (if (null? l) '()
+      (let* ([n (car l)]
+             [l1 (search-n-remove n (cdr l))])
+        (cons n (uniquer l1)))))
+
+(define (movefinder x y color)
+  (let* ([square (send board board-ref x y)]
+         [pc (send square occupied?)])
+    (if (not pc) '()
+        (if (equal? (get-field color pc) color)
+            (send pc valid-move)
+            '()))))
+
+(define (allpossible color)
+  (uniquer (flatten (lc (movefinder x y color) : 
+                        x <-(list 1 2 3 4 5 6 7 8) 
+                        y <- (list 1 2 3 4 5 6 7 8)))))
+
+(define (kill-common l1 l2)
+  (if (or (null? l2) (null? l1))
+      l1
+      (let* ([n (car l2)]
+             [l (search-n-remove n l1)])
+        (kill-common l (cdr l2)))))
+
 (define-syntax lc
   (syntax-rules (: <- @)
     [(lc exp : var <- lexp) (map (lambda (var) exp) lexp)]
@@ -7,6 +41,7 @@
     [(lc exp : var <- lexp qualifier ...) 
      (concat (lc (lc exp :  qualifier ... ) : var <- lexp))]))
 
+;;;;;The Piece Class;;;;;
 (define piece%
   (class object%
     (super-new)
@@ -16,6 +51,7 @@
 
 ;;;;;Pieces;;;;;
 ;King
+;;The King Class
 (define king%
   (class piece%
     (init col)
@@ -23,16 +59,31 @@
     (define/override (valid-move)
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
-      (scan-discreet (mbound (list
-                              (cons (+ posx 1) posy)
-                              (cons (- posx 1) posy)
-                              (cons posx (+ posy 1))
-                              (cons posx (- posy 1))
-                              (cons (+ posx 1) (+ posy 1))
-                              (cons (+ posx 1) (- posy 1))
-                              (cons (- posx 1) (+ posy 1))
-                              (cons (- posx 1) (- posy 1)))) (get-field color this)))))
-
+      (scan-discreet 
+       (mbound 
+        (list
+         (cons (+ posx 1) posy)
+         (cons (- posx 1) posy)
+         (cons posx (+ posy 1))
+         (cons posx (- posy 1))
+         (cons (+ posx 1) (+ posy 1))
+         (cons (+ posx 1) (- posy 1))
+         (cons (- posx 1) (+ posy 1))
+         (cons (- posx 1) (- posy 1)))) 
+       (get-field color this)))
+    (define/public (king-valid-move)
+      (let* ([color (get-field color this)]
+             [allothers (if (eq? color 'Black)
+                            (allpossible 'White)
+                            (allpossible 'Black))]
+             [selfmoves (send this valid-move)])
+        (begin
+          (display allothers)
+          (newline)
+          (display selfmoves)
+          (newline)
+          (kill-common selfmoves allothers)
+          )))))
 
 ;Queen
 (define queen%
@@ -43,10 +94,6 @@
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
       (mbound (append
-               (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not (= y posy))) (get-field color this))
-               (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not (= y posy))) (get-field color this))
-               (scan-continuous-b (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx))) (get-field color this))
-               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx))) (get-field color this))
                (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
                                       (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
@@ -58,7 +105,11 @@
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
                (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
                                       (and (= (+ x y) (+ posx posy)) 
-                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this)))))))
+                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
+               (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not (= y posy))) (get-field color this))
+               (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not (= y posy))) (get-field color this))
+               (scan-continuous-b (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx))) (get-field color this))
+               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx))) (get-field color this)))))))
 
 ;Bishop
 (define bishop%
@@ -209,12 +260,15 @@
     (if (null? movelist) 'khaali
         (if (is-occupied? (car movelist)) (car movelist)
             (occ-square1st (cdr movelist)))))
-  (if (occ-square1st movelist) 
-      (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
-            [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
-             (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
-            [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) (list (occ-square1st movelist)))])
-      movelist))
+  (define finalres (if (occ-square1st movelist) 
+                       (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
+                             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
+                              (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
+                             [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) 
+                                           (list (occ-square1st movelist)))])
+                       movelist))
+  (if (or (pair? finalres) (null? finalres)) finalres
+      (list finalres)))
 
 (define (scan-continuous-b movelistp colour)
   (define movelist (reverse movelistp))
@@ -222,46 +276,28 @@
     (if (null? movelist) 'khaali
         (if (is-occupied? (car movelist)) (car movelist)
             (occ-square1st (cdr movelist)))))
-  (if (occ-square1st movelist) 
-      (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
-            [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
-             (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
-            [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) (occ-square1st movelist))])
-      movelist))
+  (define finalres (if (occ-square1st movelist) 
+                       (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
+                             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
+                              (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
+                             [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) 
+                                           (list (occ-square1st movelist)))])
+                       movelist))
+  (if (or (pair? finalres) (null? finalres)) finalres
+      (list finalres)))
 
 (define (rev-cdr l)
   (reverse (cdr (reverse l))))
 
 (define (takewhile p l)
-  (foldr (lambda (x t) (if (p x) (cons x t) '())) '() l))
+  (foldr (lambda (x t) (if (p x) (append (list x) t) '())) '() l))
 
 (define (flatten l)
   (cond [(null? l) '()]
         [else (if (list? (car l)) (append (flatten (car l)) (flatten (cdr l)))
-              (append (list (car l)) (flatten (cdr l))))]))
+                  (append (list (car l)) (flatten (cdr l))))]))
 
 (define (concat l) (foldr append `() l))
-
-(define (search-n-remove n l)
-  (define (helper l fl)
-    (cond [(null? l) fl]
-          [(= (car l) n) (helper (cdr l) fl)]
-          [else (helper (cdr l) (append fl (list (car l))))]))
-  (helper l '()))
-
-(define (uniquer l)
-  (if (null? l) '()
-      (let* ([n (car l)]
-             [l1 (search-n-remove n (cdr l))])
-        (cons n (uniquer l1)))))
-
-(define (movefinder x y color)
-  (let* ([square (send board board-ref x y)]
-         [pc (send square occupied?)])
-    (if (not pc) '()
-        (if (equal? (get-field color pc) color)
-            (send pc valid-move)
-            '()))))
 
 (define (one-to-n n)
   (if (= n 0) `()
