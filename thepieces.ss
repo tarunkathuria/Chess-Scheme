@@ -71,7 +71,7 @@
          (cons (- posx 1) (+ posy 1))
          (cons (- posx 1) (- posy 1)))) 
        (get-field color this)))
-    (define/public (king-valid-move)
+    (define/public (get-valid-moves)
       (let* ([color (get-field color this)]
              [allothers (if (eq? color 'Black)
                             (allpossible 'White)
@@ -109,7 +109,9 @@
                (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not (= y posy))) (get-field color this))
                (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not (= y posy))) (get-field color this))
                (scan-continuous-b (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx))) (get-field color this))
-               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx))) (get-field color this)))))))
+               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx))) (get-field color this)))))
+    (define/public (get-valid-moves)
+      (send this valid-move))))
 
 ;Bishop
 (define bishop%
@@ -131,7 +133,9 @@
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
                (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
                                       (and (= (+ x y) (+ posx posy)) 
-                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this)))))))
+                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this)))))
+    (define/public (get-valid-moves)
+      (send this valid-move))))
 
 ;Rook
 (define rook%
@@ -145,7 +149,9 @@
                (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not (= y posy))) (get-field color this))
                (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not (= y posy))) (get-field color this))
                (scan-continuous-b (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx))) (get-field color this))
-               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx))) (get-field color this)))))))
+               (scan-continuous-f (lc (cons x posy) : x <- (p-to-n posx 8) @ (not (= x posx))) (get-field color this)))))
+    (define/public (get-valid-moves)
+      (send this valid-move))))
 
 
 ;Pawn
@@ -207,7 +213,9 @@
       (define posy (cdr (get-field curr-pos this)))
       (if (equal? (get-field color this) 'black)
           (pawn-moves-black posx posy)
-          (pawn-moves-white posx posy)))))
+          (pawn-moves-white posx posy)))
+    (define/public (get-valid-moves)
+      (send this valid-move))))
 
 
 ;Knight
@@ -226,7 +234,9 @@
                               (cons (+ posx 2) (+ posy 1))
                               (cons (+ posx 2) (- posy 1))
                               (cons (- posx 2) (+ posy 1))
-                              (cons (- posx 2) (- posy 1)))) (get-field color this)))))
+                              (cons (- posx 2) (- posy 1)))) (get-field color this)))
+    (define/public (get-valid-moves)
+      (send this valid-move))))
 
 ;;;;;The functions that bounds a piece inside the board;;;;;
 (define (mbound l)
