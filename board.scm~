@@ -23,8 +23,7 @@
                    (list->vector(lc (new square% [pos (cons i j)]) : i <- '(1 2 3 4 5 6 7 8))) : j <- '(1 2 3 4 5 6 7 8)))))
     ;Refer to a particular position on the board
     (define/public (board-ref i j)
-     ; (display (list j i))
-      (vector-ref (vector-ref board (- i 1)) (- j 1)))
+      (vector-ref (vector-ref board (- j 1)) (- i 1)))
     ; Set on the i,j th position piece(or blank) 
     (define/public (board-set! i j piece)
       (let* ([pos (board-ref i j)])
@@ -46,8 +45,7 @@
                            #f)])
         ; If piece in new pos, then obviously it is going to be elim.
         (if newpospiece
-            (begin (display "hasapiece")(newline) 
-              (if (equal? nppcolor 'White)
+            (begin (if (equal? nppcolor 'White)
                        (cond [(is-a? newpospiece rook%)
                               (vector-set! white-captured 0 (+ 1 (vector-ref white-captured 0)))]
                              [(is-a? newpospiece knight%)
@@ -73,20 +71,18 @@
                    (board-set! (car piecepos) (cdr piecepos) #f)
                    (set-field! curr-pos piece (cons i j)));;;;;Is there anything else?       
             ; Otherwise, either promotion or just a move;;Enp and castling to be done!!!!!!
-            ;;;;;;;;;;;;;;;;;;;Made changed color->col (I feel this isnt quite correct) Look it up!
-            ;(if (is-a? piece pawn?)
-             ;   (when (and (equal? piececolor 'White) (= j 8))
-              ;    (let* ([opt (read)])
-               ;     (cond [(equal? opt 'Queen) (begin (board-set! i j (new queen% [curr-pos (cons i j)] [col (get-field color piece)])))]
-                ;          [(equal? opt 'Rook) (begin (board-set! i j (new rook% [curr-pos (cons i j)] [col (get-field color piece)])))]
-                 ;         [(equal? opt 'Bishop) (begin (board-set! i j (new bishop% [curr-pos (cons i j)] [col (get-field color piece)])))]
-                  ;        [(equal? opt 'Knight) (begin (board-set! i j (new knight% [curr-pos (cons i j)] [col (get-field color piece)])))])
-                  ;  (board-set! (car piecepos) (cdr piecepos) #f)))
+            ;;;;;;;;;;;;;;;;;;;Made changed color->col
+            (if (is-a? piece pawn?)
+                (when (and (equal? piececolor 'White) (= j 8))
+                  (let* ([opt (read)])
+                    (cond [(equal? opt 'Queen) (begin (board-set! i j (new queen% [curr-pos (cons i j)] [col (get-field color piece)])))]
+                          [(equal? opt 'Rook) (begin (board-set! i j (new rook% [curr-pos (cons i j)] [col (get-field color piece)])))]
+                          [(equal? opt 'Bishop) (begin (board-set! i j (new bishop% [curr-pos (cons i j)] [col (get-field color piece)])))]
+                          [(equal? opt 'Knight) (begin (board-set! i j (new knight% [curr-pos (cons i j)] [col (get-field color piece)])))])
+                    (board-set! (car piecepos) (cdr piecepos) #f)))
                 (begin (board-set! i j piece)
                        (board-set! (car piecepos) (cdr piecepos) #f)
-                       (set-field! curr-pos piece (cons i j) ))
-                ;)
-            )))
+                       (set-field! curr-pos (cons i j) piece))))))
     ;;;;;;;;;;;;;;;;;;;Made changes in initialise(CHECK)
     (define/public (initialise)
       (define (helper j i)
@@ -112,27 +108,28 @@
              [(= i 7) (board-set! j i (new pawn% [curr-pos (cons j i)] [col 'White]))]
              [else (board-set! j i #f)]))
       (for-each (λ(y) (for-each (λ(x) (helper x y)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
-    (define/public (make-move! ppos npos)
-      (let* ([posPx (car ppos)]
-             [posPy (cdr ppos)]
-             [posNx (car npos)]
-             [posNy (cdr npos)]
+    (define/public (make-move!)
+      (let* ([posPx (begin (display "InitialPositionX") (newline) (read))]
+             [posPy (begin(display "InitialPositionY") (newline) (read))]
+             [posNx (begin(display "FinalPositionX") (newline) (read))]
+             [posNy (begin(display "FinalPositionX") (newline) (read))]
              [piece (get-field occupancy (board-ref posPx posPy))]
+             [i (display (is-a? piece knight%))]
              [validMovesList (begin (display(send piece valid-move)) (send piece valid-move))]
              [isMoveValid? (member (cons posNx posNy) validMovesList)])
         (newline)     
         (if isMoveValid?
-                 (begin(display "v")(move-piece! posNx posNy piece))
-                 (display "nv"))))    
+                 (move-piece! posNx posNy piece)
+                 (make-move!))))    
     ))
 
 
 ;;;;;;Made changes
 (define board (new board%))
 (send board initialise)
-;(send board print-board)
-;(newline)
-;(display (get-field occupancy (send board board-ref 3 1)))
-;(newline)
-;(get-field color (get-field occupancy (send board board-ref 3 1)))
+(send board print-board)
+(newline)
+(display (get-field occupancy (send board board-ref 3 1)))
+(newline)
+(get-field color (get-field occupancy (send board board-ref 3 1)))
 
