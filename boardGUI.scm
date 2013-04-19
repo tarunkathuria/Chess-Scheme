@@ -1,7 +1,7 @@
 ;(require "guitest.scm")
 ;Makes board on GUI
 ;Self contained
-(define (imgAt x y tagStr)
+(define (imgAt x y tagStr) 
   
   (let* ([sqState (get-field occupancy (send board board-ref x y))])
     (if (not sqState)

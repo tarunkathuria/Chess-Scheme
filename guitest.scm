@@ -27,7 +27,7 @@
 (define turn 'White)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;
 
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -93,7 +93,7 @@
   ((draw-pixmap Chess-Window) "Images/Chess.png" (make-posn 330 30) (make-rgb 0 0 0))
   (define mainImgHold (make-object imgHold%))
   (define new-game (make-object img-button% 
-                     "Images/new-game.png" 250 175 160 40 
+                     "Images/new-game.png" 200 165 160 40 
                      (λ() 
                        (begin
                          (sleep 0.1)
@@ -111,9 +111,9 @@
 (define (new-game-setup)
   ((draw-pixmap Chess-Window) "Images/ChessNG.jpg" (make-posn 0 0) (make-rgb 0 0 0))
   ((draw-pixmap Chess-Window) "Images/Chess.png" (make-posn 330 30) (make-rgb 0 0 0))
-  ((draw-pixmap Chess-Window) "Images/1-player.png" (make-posn 420 200) (make-rgb 0 0 0))
+  ((draw-pixmap Chess-Window) "Images/1-player.png" (make-posn 220 200) (make-rgb 0 0 0))
   (define new-gameHold (make-object imgHold%))
-  (define level-1 (make-object img-button% "Images/level-1.png" 270 250 120 30 
+  (define level-1 (make-object img-button% "Images/level-1.png" 230 290 120 30 
                     (λ () 
                       (begin
                         (sleep 0.1)
