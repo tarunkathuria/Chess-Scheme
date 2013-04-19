@@ -168,14 +168,14 @@
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
       (scan-discreet (mbound (list
-                              (cons (+ 1 posx) (+ 2 posy))
-                              (cons (+ 1 posx) (- 2 posy))
-                              (cons (- 1 posx) (+ 2 posy))
-                              (cons (- 1 posx) (- 2 posy))
-                              (cons (+ 2 posx) (+ 1 posy))
-                              (cons (+ 2 posx) (- 1 posy))
-                              (cons (- 2 posx) (+ 1 posy))
-                              (cons (- 2 posx) (- 1 posy)))) (get-field col this)))))
+                              (cons (+ posx 1) (+ posy 2))
+                              (cons (+ posx 1) (- posy 2))
+                              (cons (- posx 1) (+ posy 2))
+                              (cons (- posx 1) (- posy 2))
+                              (cons (+ posx 2) (+ posy 1))
+                              (cons (+ posx 2) (- posy 1))
+                              (cons (- posx 2) (+ posy 1))
+                              (cons (- posx 2) (- posy 1)))) (get-field color this)))))
 
 ;;;;;The functions that bounds a piece inside the board;;;;;
 (define (mbound l)
@@ -213,7 +213,7 @@
       (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
              (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
-            [else (cons (takewhile (lambda (x) (not (is-occupied? x))) movelist) occ-square1st)])
+            [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) (list (occ-square1st movelist)))])
       movelist))
 
 (define (scan-continuous-b movelistp colour)
@@ -226,7 +226,7 @@
       (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
              (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
-            [else (cons (takewhile (lambda (x) (not (is-occupied? x))) movelist) occ-square1st)])
+            [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) (occ-square1st movelist))])
       movelist))
 
 (define (rev-cdr l)
@@ -235,7 +235,33 @@
 (define (takewhile p l)
   (foldr (lambda (x t) (if (p x) (cons x t) '())) '() l))
 
+(define (flatten l)
+  (cond [(null? l) '()]
+        [else (if (list? (car l)) (append (flatten (car l)) (flatten (cdr l)))
+              (append (list (car l)) (flatten (cdr l))))]))
+
 (define (concat l) (foldr append `() l))
+
+(define (search-n-remove n l)
+  (define (helper l fl)
+    (cond [(null? l) fl]
+          [(= (car l) n) (helper (cdr l) fl)]
+          [else (helper (cdr l) (append fl (list (car l))))]))
+  (helper l '()))
+
+(define (uniquer l)
+  (if (null? l) '()
+      (let* ([n (car l)]
+             [l1 (search-n-remove n (cdr l))])
+        (cons n (uniquer l1)))))
+
+(define (movefinder x y color)
+  (let* ([square (send board board-ref x y)]
+         [pc (send square occupied?)])
+    (if (not pc) '()
+        (if (equal? (get-field color pc) color)
+            (send pc valid-move)
+            '()))))
 
 (define (one-to-n n)
   (if (= n 0) `()
