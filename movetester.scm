@@ -13,6 +13,6 @@
 ;       [isMoveValid? (member (cons posNx posNy) validMovesList)])
 ;  (begin (display validMovesList) (newline) (display isMoveValid?) (newline)))
 ;(send board print-board)
-(get-field occupancy (send board board-ref 1 7))
+(send (get-field occupancy (send board board-ref 1 2)) get-valid-moves)
 ;(send (get-field occupancy (send board board-ref 1 7)) valid-move)
 (get-field occupancy (send board board-ref 4 1))

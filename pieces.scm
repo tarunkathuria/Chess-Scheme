@@ -21,8 +21,8 @@
             '()))))
 
 (define (allpossible color)
-  (uniquer (flatten (lc (movefinder x y color) :
-                        x <-(list 1 2 3 4 5 6 7 8)
+  (uniquer (flatten (lc (movefinder x y color) : 
+                        x <-(list 1 2 3 4 5 6 7 8) 
                         y <- (list 1 2 3 4 5 6 7 8)))))
 
 (define (kill-common l1 l2)
@@ -36,10 +36,10 @@
   (syntax-rules (: <- @)
     [(lc exp : var <- lexp) (map (lambda (var) exp) lexp)]
     [(lc exp : @ guard) (if guard (list exp) `())]
-    [(lc exp : @ guard qualifier ...)
+    [(lc exp : @ guard qualifier ...) 
      (concat (lc (lc exp : qualifier ...) : guard))]
-    [(lc exp : var <- lexp qualifier ...)
-     (concat (lc (lc exp : qualifier ... ) : var <- lexp))]))
+    [(lc exp : var <- lexp qualifier ...) 
+     (concat (lc (lc exp :  qualifier ... ) : var <- lexp))]))
 
 ;;;;;The Piece Class;;;;;
 (define piece%
@@ -59,8 +59,8 @@
     (define/override (valid-move)
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
-      (scan-discreet
-       (mbound
+      (scan-discreet 
+       (mbound 
         (list
          (cons (+ posx 1) posy)
          (cons (- posx 1) posy)
@@ -69,7 +69,7 @@
          (cons (+ posx 1) (+ posy 1))
          (cons (+ posx 1) (- posy 1))
          (cons (- posx 1) (+ posy 1))
-         (cons (- posx 1) (- posy 1))))
+         (cons (- posx 1) (- posy 1)))) 
        (get-field color this)))
     (define/public (get-valid-moves)
       (let* ([color (get-field color this)]
@@ -77,13 +77,7 @@
                             (allpossible 'White)
                             (allpossible 'Black))]
              [selfmoves (send this valid-move)])
-        (begin
-          (display allothers)
-          (newline)
-          (display selfmoves)
-          (newline)
-          (kill-common selfmoves allothers)
-          )))))
+          (kill-common selfmoves allothers)))))
 
 ;Queen
 (define queen%
@@ -94,17 +88,17 @@
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
       (mbound (append
-               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @
-                                      (and (= (- x y) (- posx posy))
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
+                                      (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @
-                                      (and (= (- x y) (- posx posy))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
                                       (and (= (+ x y) (+ posx posy))
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @
-                                      (and (= (+ x y) (+ posx posy))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (+ x y) (+ posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
                (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not (= y posy))) (get-field color this))
                (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not (= y posy))) (get-field color this))
@@ -121,18 +115,18 @@
     (define/override (valid-move)
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
-      (mbound (append
-               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @
-                                      (and (= (- x y) (- posx posy))
+      (mbound (append 
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
+                                      (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @
-                                      (and (= (- x y) (- posx posy))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @
+               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
                                       (and (= (+ x y) (+ posx posy))
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @
-                                      (and (= (+ x y) (+ posx posy))
+               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
+                                      (and (= (+ x y) (+ posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this)))))
     (define/public (get-valid-moves)
       (send this valid-move))))
@@ -259,7 +253,7 @@
 (define (scan-discreet movelist colour)
   (define (helper l fl)
     (if (null? l) fl
-        (cond [(is-occupied? (car l)) (if (eq? (get-field color (is-occupied? (car l))) colour)
+        (cond [(is-occupied? (car l)) (if (eq? (get-field color (is-occupied? (car l))) colour) 
                                           (helper (cdr l) fl)
                                           (helper (cdr l) (append (list (car l)) fl)))]
               [else (helper (cdr l) (append (list (car l)) fl))])))
@@ -270,11 +264,11 @@
     (if (null? movelist) 'khaali
         (if (is-occupied? (car movelist)) (car movelist)
             (occ-square1st (cdr movelist)))))
-  (define finalres (if (occ-square1st movelist)
+  (define finalres (if (occ-square1st movelist) 
                        (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
-                             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist))))
+                             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
                               (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
-                             [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist)
+                             [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) 
                                            (list (occ-square1st movelist)))])
                        movelist))
   (if (or (pair? finalres) (null? finalres)) finalres
@@ -286,11 +280,11 @@
     (if (null? movelist) 'khaali
         (if (is-occupied? (car movelist)) (car movelist)
             (occ-square1st (cdr movelist)))))
-  (define finalres (if (occ-square1st movelist)
+  (define finalres (if (occ-square1st movelist) 
                        (cond [(eq? 'khaali (occ-square1st movelist)) movelist]
-                             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist))))
+                             [(eq? colour (get-field color (is-occupied? (occ-square1st movelist)))) 
                               (takewhile (lambda (x) (not (is-occupied? x))) movelist)]
-                             [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist)
+                             [else (append (takewhile (lambda (x) (not (is-occupied? x))) movelist) 
                                            (list (occ-square1st movelist)))])
                        movelist))
   (if (or (pair? finalres) (null? finalres)) finalres

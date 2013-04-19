@@ -83,11 +83,11 @@
       (begin (display "empty") (movesMCL))
       (if (and (odd? temp3)   
                (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
-               (>= x 1) (>= y 1) (<= x 8) (<= y 8) (not (equal? turn (get-field color (get-field occupancy (send board board-ref x y))))))
+               (>= x 1) (>= y 1) (<= x 8) (<= y 8) (not (equal? (get-field turn board) (get-field color (get-field occupancy (send board board-ref x y))))))
           (begin (display "not ur turn") (movesMCL))
           (if (and (odd? temp3)  
                    (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
-                   (>= x 1) (>= y 1) (<= x 8) (<= y 8) (equal? turn (get-field color (get-field occupancy (send board board-ref x y)))) )
+                   (>= x 1) (>= y 1) (<= x 8) (<= y 8) (equal? (get-field turn board) (get-field color (get-field occupancy (send board board-ref x y)))) )
               (begin
                 (display "ur turn")
                 

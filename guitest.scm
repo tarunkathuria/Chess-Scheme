@@ -24,7 +24,7 @@
 (define board1 null)
 (define mode 2)
 
-(define turn 'White)
+;(define turn 'White)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;
@@ -74,14 +74,6 @@
 
 
 
-  
-               
-
-
-
-
-
-
 ;A mouse click listener which takes an image(actually it's center)
 (define (MouseClickListener img)
   (define posn (mouse-click-posn (get-mouse-click Chess-Window)))
@@ -98,7 +90,7 @@
                        (begin
                          (sleep 0.1)
                          (send board initialise) 
-                         (set! turn 'White)
+                         ;(set! turn 'White)
                          (set! board1 board)
                          ((clear-viewport Chess-Window))
                          (new-game-setup)))

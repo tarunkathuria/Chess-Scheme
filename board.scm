@@ -16,6 +16,7 @@
     (super-new)
     (init-field [white-captured (make-vector 5 0)])	; rook,knight,bishop,queen,pawn
     (init-field [black-captured (make-vector 5 0)])
+    (init-field [turn 'White])
     ;teh actual board
    (init-field (board
                  (list->vector 
@@ -111,6 +112,7 @@
              [(= i 2) (board-set! j i (new pawn% [curr-pos (cons j i)] [col 'Black]))]
              [(= i 7) (board-set! j i (new pawn% [curr-pos (cons j i)] [col 'White]))]
              [else (board-set! j i #f)]))
+      (set-field! turn this 'White)
       (for-each (λ(y) (for-each (λ(x) (helper x y)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
     (define/public (make-move! ppos npos)
       (let* ([posPx (car ppos)]
@@ -123,8 +125,9 @@
         (newline)     
         (if isMoveValid?
                  (begin(display "v")(move-piece! posNx posNy piece))
-                 (display "nv"))))    
-    ))
+                 (display "nv")))
+      (set-field! turn this (if (equal? turn 'White) 'Black 'White))    
+    )))
 
 
 ;;;;;;Made changes
