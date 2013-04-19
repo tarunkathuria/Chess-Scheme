@@ -113,15 +113,16 @@
              [else (board-set! j i #f)]))
       (set-field! turn this 'White)
       (for-each (λ(y) (for-each (λ(x) (helper x y)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
+    
     (define/public (make-move! ppos npos)
       (let* ([posPx (car ppos)]
              [posPy (cdr ppos)]
              [posNx (car npos)]
              [posNy (cdr npos)]
              [piece (get-field occupancy (board-ref posPx posPy))]
-             [validMovesList (begin  (send piece valid-move))]
+             [validMovesList (begin  (send piece get-valid-moves))]
              [isMoveValid? (member (cons posNx posNy) validMovesList)])
-        (newline)     
+       (newline) (display validMovesList) (newline)     
         (when isMoveValid?
             (begin(move-piece! posNx posNy piece))
             ))
@@ -167,7 +168,7 @@
       (for (set! x 1) : (and (< x 9) (< y 9)) : (incrIndex) : (nums x y))    
       (define MaterialBlack (+  (* numBlackKing 100000) (* numBlackPawns 100) (* numBlackQueens 980)
                                 (* numBlackRooks 520) (* numBlackKnights 330) (* numBlackBishops 330)))
-      (define MaterialWhite (+  (* numWhiteKing 20000) (* numWhitePawns 100) (* numWhiteQueens 980)
+      (define MaterialWhite (+  (* numWhiteKing 100000) (* numWhitePawns 100) (* numWhiteQueens 980)
                                 (* numWhiteRooks 520) (* numWhiteKnights 330) (* numWhiteBishops 330)))
       
       (cons MaterialWhite MaterialBlack))

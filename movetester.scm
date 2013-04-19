@@ -4,6 +4,7 @@
 ;(include "syntactic-sugar.scm") Can remove
 
 (send board print-board)
+(allpossible 'Black)
 (get-field color (get-field occupancy (send board board-ref 3 1)))
 (send (get-field occupancy (send board board-ref 3 7)) valid-move)
 (send board make-move! (cons 3 7) (cons 3 5))

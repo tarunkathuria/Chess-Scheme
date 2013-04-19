@@ -33,12 +33,12 @@
                                                       (if (even? (+ x y)) "white" "black") 
                                                       (if (equal? (get-field color sqState) 'Black) "-B-" "-W-")
                                                       "bishop" tagStr ".png")]))))
-
+;Think this is fine
 (define (drawValidMoves board posn)
  ; (display posn) (newline)
   ;(display (get-field occupancy (send board board-ref (car posn) (cdr posn))))
   (let* ([piece (get-field occupancy (send board board-ref (car posn) (cdr posn)))]
-         [pieceValidMoves (send piece valid-move)])
+         [pieceValidMoves (send piece get-valid-moves)])
     ;(display "reached here")
     ;(display pieceValidMoves)
     (define (helper e)
@@ -73,6 +73,7 @@
 (define temp3 1)
 
 (define (movesMCL)
+  ;(display (allpossible 'White))
   (define posn (mouse-click-posn (get-mouse-click Chess-Window))) 
   (define x (+ 1 (quotient (- (posn-x posn) horiz-inset) imgWidth)))
   (define y (+ 1 (quotient (- (posn-y posn) vert-inset) imgHeight)))
@@ -91,11 +92,11 @@
                                                           (get-field color (get-field occupancy (send board board-ref x y)))) )
          (begin
            (display "ur turn")
-           
+           (set! temp1 (cons x y))
            ((draw-pixmap Chess-Window) (imgAt x y "-selected") 
                                        (make-posn (+ horiz-inset (* imgWidth (- x 1))) (+ vert-inset (* imgHeight (- y 1)))) 
                                        (make-rgb 0 0 0))
-           (set! temp1 (cons x y))
+           
            (drawValidMoves board temp1)
            (set! temp3 (+ temp3 1))
            (movesMCL))]
@@ -103,18 +104,17 @@
               (>= x 1) (>= y 1) (<= x 8) (<= y 8))
          (begin (set! temp2 (cons x y))
                 (set! temp3 (+ temp3 1))
-                (if  (equal? temp1 temp2)
-                     (begin
-                       (make-board)
-                       ;(when (in-check? (get-field turn board))
-                       ; ((draw-pixmap Chess-Window) (imgAt x y "-selected") 
-                       ;           (make-posn (+ horiz-inset (* imgWidth (- x 1))) (+ vert-inset (* imgHeight (- y 1)))) 
-                       ;            (make-rgb 0 0 0))
-                       (movesMCL))
+                (if  (and (not(equal? temp1 temp2)) 
+                          (member temp2 (send (get-field occupancy 
+                                                         (send board board-ref (car temp1) (cdr temp1))) get-valid-moves)))
                      (begin
                        (send board make-move! temp1 temp2)
                        (make-board)
-                       (movesMCL))))]
+                       (movesMCL))
+                     (begin (make-board)
+                            (movesMCL))))
+                     
+                     ]
          [else (movesMCL)]))
 
 

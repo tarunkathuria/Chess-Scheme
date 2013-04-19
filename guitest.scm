@@ -12,10 +12,10 @@
 (define imgHeight 75)
 (define H 8)
 (define V 8)
-(define horiz-inset 200)
+(define horiz-inset 100)
 (define vert-inset 35)
-(define right-gap 200)
-(define bottom-gap 50)
+(define right-gap 50)
+(define bottom-gap 10)
 
 (define width (* H imgWidth))
 (define height (* V imgHeight))

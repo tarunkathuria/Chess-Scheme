@@ -1,4 +1,14 @@
 ;;;;;Definitions;;;;;
+
+(define-syntax lc
+  (syntax-rules (: <- @)
+    [(lc exp : var <- lexp) (map (lambda (var) exp) lexp)]
+    [(lc exp : @ guard) (if guard (list exp) `())]
+    [(lc exp : @ guard qualifier ...) 
+     (concat (lc (lc exp : qualifier ...) : guard))]
+    [(lc exp : var <- lexp qualifier ...) 
+     (concat (lc (lc exp :  qualifier ... ) : var <- lexp))]))
+
 (define (search-n-remove n l)
   (define (helper l fl)
     (cond [(null? l) fl]
@@ -17,7 +27,7 @@
          [pc (send square occupied?)])
     (if (not pc) '()
         (if (equal? (get-field color pc) color)
-            (send pc valid-move)
+            (map (lambda (x) (cons (get-field curr-pos pc) x)) (send pc valid-move))
             '()))))
 
 (define (allpossible color)
@@ -32,14 +42,6 @@
              [l (search-n-remove n l1)])
         (kill-common l (cdr l2)))))
 
-(define-syntax lc
-  (syntax-rules (: <- @)
-    [(lc exp : var <- lexp) (map (lambda (var) exp) lexp)]
-    [(lc exp : @ guard) (if guard (list exp) `())]
-    [(lc exp : @ guard qualifier ...) 
-     (concat (lc (lc exp : qualifier ...) : guard))]
-    [(lc exp : var <- lexp qualifier ...) 
-     (concat (lc (lc exp :  qualifier ... ) : var <- lexp))]))
 
 ;;;;;The Piece Class;;;;;
 (define piece%
@@ -77,7 +79,7 @@
                             (allpossible 'White)
                             (allpossible 'Black))]
              [selfmoves (send this valid-move)])
-          (kill-common selfmoves allothers)))))
+        (kill-common selfmoves allothers)))))
 
 ;Queen
 (define queen%
@@ -94,12 +96,14 @@
                (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
                                       (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
-                                      (and (= (+ x y) (+ posx posy))
-                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
-                                      (and (= (+ x y) (+ posx posy)) 
-                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
+               (scan-continuous-f 
+                (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n 1 posy) @ 
+                    (and (= (+ x y) (+ posx posy))
+                         (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
+               (scan-continuous-b 
+                (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n posy 8) @ 
+                    (and (= (+ x y) (+ posx posy)) 
+                         (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
                (scan-continuous-b (lc (cons posx y) : y <- (p-to-n 1 posy) @ (not (= y posy))) (get-field color this))
                (scan-continuous-f (lc (cons posx y) : y <- (p-to-n posy 8) @ (not (= y posy))) (get-field color this))
                (scan-continuous-b (lc (cons x posy) : x <- (p-to-n 1 posx) @ (not (= x posx))) (get-field color this))
@@ -122,12 +126,14 @@
                (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
                                       (and (= (- x y) (- posx posy)) 
                                            (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-b (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n 1 posy) @ 
-                                      (and (= (+ x y) (+ posx posy))
-                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
-               (scan-continuous-f (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n posy 8) @ 
-                                      (and (= (+ x y) (+ posx posy)) 
-                                           (not (and (equal? x posx) (equal? y posy))))) (get-field color this)))))
+               (scan-continuous-f 
+                (lc (cons x y) : x <- (p-to-n posx 8) y <- (p-to-n 1 posy) @ 
+                    (and (= (+ x y) (+ posx posy))
+                         (not (and (equal? x posx) (equal? y posy))))) (get-field color this))
+               (scan-continuous-b 
+                (lc (cons x y) : x <- (p-to-n 1 posx) y <- (p-to-n posy 8) @ 
+                    (and (= (+ x y) (+ posx posy)) 
+                         (not (and (equal? x posx) (equal? y posy))))) (get-field color this)))))
     (define/public (get-valid-moves)
       (send this valid-move))))
 
@@ -152,46 +158,80 @@
 ;;Pawn Abstractions
 (define (pawn-moves-black posx posy)
   (define (frontocc)
-    (cond [(and (is-occupied? (cons (+ 1 posx) (+ 1 posy)))
+    (cond [(= posx 1)
+           (cond [(is-occupied? (cons (+ 1 posx) (+ 1 posy))) 
+                  (scan-discreet (list
+                                  (cons (+ posx 1) (+ posy 1))) 'Black)]
+                 [(is-occupied? (cons (+ 1 posx) (+ 1 posy)))
+                  (scan-discreet (list
+                                  (cons (+ posx 1) (+ posy 1))) 'Black)]
+                 [else '()])]
+          [(= posx 8)
+           (cond [(is-occupied? (cons (- posx 1) (+ 1 posy)))
+                  (scan-discreet (list
+                                  (cons (- posx 1) (+ posy 1))) 'Black)]
+                 [(is-occupied? (cons (- posx 1) (+ 1 posy)))
+                  (scan-discreet (list
+                                  (cons (- posx 1) (+ posy 1))) 'Black)]
+                 [else '()])]
+          [(and (is-occupied? (cons (+ 1 posx) (+ 1 posy)))
                 (is-occupied? (cons (- posx 1) (+ 1 posy))))
            (scan-discreet (list
                            (cons (+ posx 1) (+ posy 1))
-                           (cons (- posx 1) (+ posy 1))) 'black)]
+                           (cons (- posx 1) (+ posy 1))) 'Black)]
           [(is-occupied? (cons (+ 1 posx) (+ 1 posy)))
            (scan-discreet (list
-                           (cons (+ posx 1) (+ posy 1))) 'black)]
-          [(is-occupied? (cons (- posx 1) (+ 1 posy)));
+                           (cons (+ posx 1) (+ posy 1))) 'Black)]
+          [(is-occupied? (cons (- posx 1) (+ 1 posy)))
            (scan-discreet (list
-                           (cons (- posx 1) (+ posy 1))) 'black)]
+                           (cons (- posx 1) (+ posy 1))) 'Black)]
           [else '()]))
   (define (frocc2)
     (append (list (cons posx (+ 1 posy))) (frontocc)))
   (define (fronoc2)
     (append (list (cons posx (+ posy 2))) (frocc2)))
-  (cond [(is-occupied? (cons posx (+ 1 posy))) (frontocc)]
+  (cond [(= posy 8) '()]
+        [(is-occupied? (cons posx (+ 1 posy))) (frontocc)]
         [(= posy 2)
          (if (is-occupied? (cons posx (+ 2 posy))) (frocc2) (fronoc2))]
         [else (frocc2)]))
 
 (define (pawn-moves-white posx posy)
   (define (frontocc)
-    (cond [(and (is-occupied? (cons (+ 1 posx) (- posy 1)))
+    (cond [(= posx 1)
+           (cond [(is-occupied? (cons (+ 1 posx) (- posy 1))) 
+                  (scan-discreet (list
+                                  (cons (+ posx 1) (- posy 1))) 'White)]
+                 [(is-occupied? (cons (+ 1 posx) (- posy 1)))
+                  (scan-discreet (list
+                                  (cons (+ posx 1) (- posy 1))) 'White)]
+                 [else '()])]
+          [(= posx 8)
+           (cond [(is-occupied? (cons (- posx 1) (- posy 1)))
+                  (scan-discreet (list
+                                  (cons (- posx 1) (- posy 1))) 'White)]
+                 [(is-occupied? (cons (- posx 1) (- posy 1)))
+                  (scan-discreet (list
+                                  (cons (- posx 1) (- posy 1))) 'White)]
+                 [else '()])]
+          [(and (is-occupied? (cons (+ 1 posx) (- posy 1)))
                 (is-occupied? (cons (- posx 1) (- posy 1))))
            (scan-discreet (list
                            (cons (+ posx 1) (- posy 1))
-                           (cons (- posx 1) (- posy 1))) 'black)]
+                           (cons (- posx 1) (- posy 1))) 'White)]
           [(is-occupied? (cons (+ 1 posx) (- posy 1)))
            (scan-discreet (list
-                           (cons (+ posx 1) (- posy 1))) 'black)]
+                           (cons (+ posx 1) (- posy 1))) 'White)]
           [(is-occupied? (cons (- posx 1) (- posy 1)));
            (scan-discreet (list
-                           (cons (- posx 1) (- posy 1))) 'black)]
+                           (cons (- posx 1) (- posy 1))) 'White)]
           [else '()]))
   (define (frocc2)
     (append (list (cons posx (- posy 1))) (frontocc)))
   (define (fronoc2)
     (append (list (cons posx (- posy 2))) (frocc2)))
-  (cond [(is-occupied? (cons posx (- posy 1))) (frontocc)]
+  (cond [(= posy 1) '()]
+        [(is-occupied? (cons posx (- posy 1))) (frontocc)]
         [(= posy 7)
          (if (is-occupied? (cons posx (- posy 2)))
              (frocc2) (fronoc2))]
