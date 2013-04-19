@@ -35,12 +35,12 @@
                                                       "bishop" tagStr ".png")]))))
 
 (define (drawValidMoves board posn)
-  (display posn) (newline)
-  (display (get-field occupancy (send board board-ref (car posn) (cdr posn))))
+ ; (display posn) (newline)
+  ;(display (get-field occupancy (send board board-ref (car posn) (cdr posn))))
   (let* ([piece (get-field occupancy (send board board-ref (car posn) (cdr posn)))]
          [pieceValidMoves (send piece valid-move)])
-    (display "reached here")
-    (display pieceValidMoves)
+    ;(display "reached here")
+    ;(display pieceValidMoves)
     (define (helper e)
       (let* ([x (car e)]
              [y (cdr e)])
@@ -76,65 +76,62 @@
   (define posn (mouse-click-posn (get-mouse-click Chess-Window))) 
   (define x (+ 1 (quotient (- (posn-x posn) horiz-inset) imgWidth)))
   (define y (+ 1 (quotient (- (posn-y posn) vert-inset) imgHeight)))
-  (display "x") (display x) (newline) (display "y") (display y) (newline)
-  (if (and (odd? temp3) 
-           (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
-           (>= x 1) (>= y 1) (<= x 8) (<= y 8)  (not (get-field occupancy (send board board-ref x y))))
-      (begin (display "empty") (movesMCL))
-      (if (and (odd? temp3)   
-               (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
-               (>= x 1) (>= y 1) (<= x 8) (<= y 8) (not (equal? (get-field turn board) (get-field color (get-field occupancy (send board board-ref x y))))))
-          (begin (display "not ur turn") (movesMCL))
-          (if (and (odd? temp3)  
-                   (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
-                   (>= x 1) (>= y 1) (<= x 8) (<= y 8) (equal? (get-field turn board) (get-field color (get-field occupancy (send board board-ref x y)))) )
-              (begin
-                (display "ur turn")
-                
-                ((draw-pixmap Chess-Window) (imgAt x y "-selected") 
-                                            (make-posn (+ horiz-inset (* imgWidth (- x 1))) (+ vert-inset (* imgHeight (- y 1)))) 
-                                            (make-rgb 0 0 0))
-                (set! temp1 (cons x y))
-                (drawValidMoves board temp1)
-                
-                
+  
+  (cond[ (and (odd? temp3) 
+              (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
+              (>= x 1) (>= y 1) (<= x 8) (<= y 8)  (not (get-field occupancy (send board board-ref x y))))
+         (begin (display "empty") (movesMCL))]
+       [ (and (odd? temp3)   
+              (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
+              (>= x 1) (>= y 1) (<= x 8) (<= y 8) (not (equal? (get-field turn board) (get-field color (get-field occupancy (send board board-ref x y))))))
+         (begin (display "not ur turn") (movesMCL))]
+       [ (and (odd? temp3)  
+              (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
+              (>= x 1) (>= y 1) (<= x 8) (<= y 8) (equal? (get-field turn board)
+                                                          (get-field color (get-field occupancy (send board board-ref x y)))) )
+         (begin
+           (display "ur turn")
+           
+           ((draw-pixmap Chess-Window) (imgAt x y "-selected") 
+                                       (make-posn (+ horiz-inset (* imgWidth (- x 1))) (+ vert-inset (* imgHeight (- y 1)))) 
+                                       (make-rgb 0 0 0))
+           (set! temp1 (cons x y))
+           (drawValidMoves board temp1)
+           (set! temp3 (+ temp3 1))
+           (movesMCL))]
+       [ (and (even? temp3)  (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
+              (>= x 1) (>= y 1) (<= x 8) (<= y 8))
+         (begin (set! temp2 (cons x y))
                 (set! temp3 (+ temp3 1))
-                (movesMCL))
-              (if  (and (even? temp3)  (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset) 
-                        (>= x 1) (>= y 1) (<= x 8) (<= y 8))
-                        (begin (set! temp2 (cons x y))
-                              
-                        (if  (equal? temp1 temp2)
-                             (begin
-                               (set! temp3 (+ temp3 1))
-                               (make-board)
-                               (movesMCL))
-                             (begin
-                               (set! temp3 (+ temp3 1))
-                               (send board make-move! temp1 temp2)
-                               (make-board)
-                               ;(set! board board1)
-                               ; (send board print-board)
-                               ;(newline)
-                               (movesMCL))))
-                        (movesMCL)
-                        
-                        
-                        
-                        ;(if (and (even? temp3) (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset)
-                        ;        (>= x 1) (>= y 1) (<= x 8) (<= y 8))
-                        ;  (begin
-                        ;   (set! temp2 (cons y x))
-                        ;  (set! temp3 (+ temp3 1))
-                        ; (if (and (not (equal? temp1 temp2)) (check? temp1 temp2 board turn))
-                        ;    (begin
-                        ;     (
-                        
-                        
-                        )))))
-      
-      (define (play)
-        (make-board)
-        (movesMCL))
-      
-      
+                (if  (equal? temp1 temp2)
+                     (begin
+                       (make-board)
+                       ;(when (in-check? (get-field turn board))
+                       ; ((draw-pixmap Chess-Window) (imgAt x y "-selected") 
+                       ;           (make-posn (+ horiz-inset (* imgWidth (- x 1))) (+ vert-inset (* imgHeight (- y 1)))) 
+                       ;            (make-rgb 0 0 0))
+                       (movesMCL))
+                     (begin
+                       (send board make-move! temp1 temp2)
+                       (make-board)
+                       (movesMCL))))]
+         [else (movesMCL)]))
+
+
+
+;(if (and (even? temp3) (> (posn-x posn) horiz-inset) (> (posn-y posn) vert-inset)
+;        (>= x 1) (>= y 1) (<= x 8) (<= y 8))
+;  (begin
+;   (set! temp2 (cons y x))
+;  (set! temp3 (+ temp3 1))
+; (if (and (not (equal? temp1 temp2)) (check? temp1 temp2 board turn))
+;    (begin
+;     (
+
+
+
+
+(define (play)
+  (make-board)
+  (movesMCL))
+

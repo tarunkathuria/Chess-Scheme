@@ -205,7 +205,7 @@
     (define/override (valid-move)
       (define posx (car (get-field curr-pos this)))
       (define posy (cdr (get-field curr-pos this)))
-      (if (equal? (get-field color this) 'black)
+      (if (equal? (get-field color this) 'Black)
           (pawn-moves-black posx posy)
           (pawn-moves-white posx posy)))
     (define/public (get-valid-moves)
