@@ -1,32 +1,43 @@
-#lang racket
-;;;Piece rating functions
-(define (value piece)
-  (cond [(is-a? piece rook%) 500]
-        [(is-a? piece knight%) 320]
-        [(is-a? piece bishop%) 325]
-        [(is-a? piece queen%) 980]
-        [(is-a? piece king%) 32767]))
-
-;     
-
-(define (evaluate board1)
-  (define intBoard1 board) ;Intermediate boards
-  (define intBoard2 board)
-  (set! board board1)
+(include "syntax.scm")
+(define (evaluate brd)
+  (define tempboard board)
+  (define tempboard1 board1)
+  (set! board brd)
+  (define tempplayer player)
+  
+  (define color `B)
+  (define othercolor `W)
+  (define (worth? piece)
+    (cond
+      [(equal? piece `queen) 980]
+      [(equal? piece `bishop) 330]
+      [(equal? piece `knight) 330]
+      [(equal? piece `rook) 520]
+      [(equal? piece `pawn) 100]
+      [(equal? piece `king) 50000]
+      [else "Incorrect piece"]))
+  
   (define score 0)
-  (define (looping-action! i j)
-    (let* ([pc (send board1 board-ref i j)])
-      (cond [(not pc) (set! score (+ score 0))]
-            [else (let* ([clr (get-field color pc)])
-                    ;We assume that Computer is playing Black
-                    (if (equal? clr 'Black)
-                        (set! score (+ score (value pc)))
-                        (set! score (- score (value pc)))))])))
-  (define (loop)
-    (for-each (λ(i) (for-each (λ(j) (looping-action! i j)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
-  (begin
-    (loop)
-    score))
+  
+  (define (helper i j)
+    (let* ([pc (list-ref (list-ref brd (- i 1)) (- j 1))])
+      (if (null? pc)
+          0
+          (if (equal? color (car pc))
+              (set! score (+ score (worth? (cdr pc))))
+              (set! score (- score (worth? (cdr pc))))))))
+  
+  
+  
+  
+  (define (addpoints)
+    (for-each (λ(i) (for-each (λ(j) (helper i j)) '(1 2 3 4 5 6 7 8))) '(1 2 3 4 5 6 7 8)))
     
-                        
-           
+  
+  
+  (begin
+    (addpoints)
+    (set! board1 tempboard1)
+    (set! board tempboard)
+    (set! player tempplayer)
+    score))

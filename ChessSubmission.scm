@@ -1,36 +1,48 @@
 (require graphics/graphics)
 (require racket/gui)
 
-(include "pieces.scm")
-(include "board.scm")
 (include "boardGUI.scm")
-;(require "alphabeta.scm")
-
+(include "makeMoves.scm")
+(include "validMoves.scm")
+(include "evaluate.scm")
+(include "minimax.scm")
+(include "syntax.scm")
 (open-graphics)
+
+(define initBoard
+  (list (list 
+         (cons 'B 'rook) (cons 'B 'knight) (cons 'B 'bishop) (cons 'B 'queen) (cons 'B 'king) (cons 'B 'bishop) (cons 'B 'knight) (cons 'B 'rook))
+        (list 
+         (cons 'B 'pawn) (cons 'B 'pawn)   (cons 'B 'pawn)   (cons 'B 'pawn)  (cons 'B 'pawn) (cons 'B 'pawn)   (cons 'B 'pawn)   (cons 'B 'pawn))
+        (build-list 8 (λ(x) '()))
+        (build-list 8 (λ(x) '()))
+        (build-list 8 (λ(x) '()))
+        (build-list 8 (λ(x) '()))
+        (list 
+         (cons 'W 'pawn) (cons 'W 'pawn)   (cons 'W 'pawn)   (cons 'W 'pawn)  (cons 'W 'pawn) (cons 'W 'pawn)   (cons 'W 'pawn)   (cons 'W 'pawn))
+        (list 
+         (cons 'W 'rook) (cons 'W 'knight) (cons 'W 'bishop) (cons 'W 'queen) (cons 'W 'king) (cons `W `bishop) (cons `W `knight) (cons 'W 'rook))))
+(define board initBoard)
+(define board1 board)
+
+(define player 'W)
 
 (define imgWidth 75)
 (define imgHeight 75)
 (define H 8)
 (define V 8)
-(define horiz-inset 200)
+(define horiz-inset 100)
 (define vert-inset 35)
-(define right-gap 200)
-(define bottom-gap 50)
+(define right-gap 150)
+(define bottom-gap 30)
 
 (define width (* H imgWidth))
 (define height (* V imgHeight))
 
 (define depth 3)
-(define board1 null)
-(define mode 2)
-
-;(define turn 'White)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;
+(define mode '2-player)
 
 
-;;;;;;;;;;;;;;;;;;;;
 (define img-button%
   (class object%
     (init-field button-name)
@@ -65,19 +77,11 @@
         
         (if (null? Imgs)
             'Empty
-             (let* ([fst (send (car Imgs) inside? pos)])
-                    (if fst (send (car Imgs) execute!) (helper (cdr Imgs))))))
+            (let* ([fst (send (car Imgs) inside? pos)])
+              (if fst (send (car Imgs) execute!) (helper (cdr Imgs))))))
       (helper imgs))))
 ;;;;A few important things needed. :p
-(define Chess-Window (open-viewport "Kasparov Chess" (+ right-gap horiz-inset width) (+ bottom-gap vert-inset height)))
-
-
-
-
-  
-               
-
-
+(define Chess-Window (open-viewport "Chess Titans" (+ right-gap horiz-inset width) (+ bottom-gap vert-inset height)))
 
 
 
@@ -85,46 +89,47 @@
 ;A mouse click listener which takes an image(actually it's center)
 (define (MouseClickListener img)
   (define posn (mouse-click-posn (get-mouse-click Chess-Window)))
- 
+  
   (cond[(equal? (send img lookinside posn) 'Empty) (MouseClickListener img)]))
 
 (define (show)
-  ((draw-pixmap Chess-Window) "Images/ChessNG.jpg" (make-posn 0 0) (make-rgb 0 0 0))
-  ((draw-pixmap Chess-Window) "Images/Chess.png" (make-posn 330 30) (make-rgb 0 0 0))
+  ((draw-pixmap Chess-Window) "Images/ChessNG.jpg" (make-posn -80 0) (make-rgb 0 0 0))
+  ((draw-pixmap Chess-Window) "Images/Chess.png" (make-posn 220 30) (make-rgb 0 0 0))
+  
   (define mainImgHold (make-object imgHold%))
   (define new-game (make-object img-button% 
-                     "Images/new-game.png" 200 165 160 40 
+                     "Images/new-game.png" 60 100 140 44 
                      (λ() 
                        (begin
                          (sleep 0.1)
-                         (send board initialise) 
-                         ;(set! turn 'White)
+                         (set! board initBoard) 
                          (set! board1 board)
+                         (set! player 'W)
+                         
                          ((clear-viewport Chess-Window))
                          (new-game-setup)))
                      mainImgHold))
-    
-    (send new-game draw)
-   
-    (MouseClickListener mainImgHold)
-   )
+  
+  (send new-game draw)
+  
+  (MouseClickListener mainImgHold)
+  )
 (define (new-game-setup)
-  ((draw-pixmap Chess-Window) "Images/ChessNG.jpg" (make-posn 0 0) (make-rgb 0 0 0))
-  ((draw-pixmap Chess-Window) "Images/Chess.png" (make-posn 330 30) (make-rgb 0 0 0))
-  ((draw-pixmap Chess-Window) "Images/1-player.png" (make-posn 220 200) (make-rgb 0 0 0))
+  ((draw-pixmap Chess-Window) "Images/ChessNG.jpg" (make-posn -80 0) (make-rgb 0 0 0))
+  ((draw-pixmap Chess-Window) "Images/1-player.png" (make-posn 40 30) (make-rgb 0 0 0))
   (define new-gameHold (make-object imgHold%))
-  (define level-1 (make-object img-button% "Images/level-1.png" 230 290 120 30 
+  (define level-1 (make-object img-button% "Images/level-1.png" 30 150 125 44 
                     (λ () 
                       (begin
                         (sleep 0.1)
                         ((clear-viewport Chess-Window))
                         (set! mode '1-player)
                         (set! depth 2)
-                         (play)
+                        (play)
                         )) new-gameHold))
-(begin
+  (begin
     (send level-1 draw)
     (MouseClickListener new-gameHold)))
 
- (show) 
-  
+(show) 
+
